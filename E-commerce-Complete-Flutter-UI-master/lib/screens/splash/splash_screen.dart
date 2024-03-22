@@ -17,17 +17,17 @@ class _SplashScreenState extends State<SplashScreen> {
   int currentPage = 0;
   List<Map<String, String>> splashData = [
     {
-      "text": "Welcome to VEND, Let’s shop!",
-      "image": "assets/images/splash_1.png"
+      "text": "Welcome to VEND,\nLet’s get you patched up!",
+      "image": "assets/images/splash_s2.jpg"
     },
     {
       "text":
-          "We help people connect with store \naround United State of America",
-      "image": "assets/images/splash_2.png"
+          "Get the care you need, conveniently \n24/7 access to essential medicines",
+      "image": "assets/images/splash_s1.jpg"
     },
     {
-      "text": "We show the easy way to shop. \navoid waiting in queues with us",
-      "image": "assets/images/splash_3.png"
+      "text": "Your health on-demand \n Over-the-counter meds, right when you need them.",
+      "image": "assets/images/splash_s3.jpg"
     },
   ];
   @override
