@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../../constants.dart';
 import '../../../models/Cart.dart';
 
@@ -7,9 +6,11 @@ class CartCard extends StatelessWidget {
   const CartCard({
     Key? key,
     required this.cart,
+    required this.onRemove,
   }) : super(key: key);
 
   final Cart cart;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -30,29 +31,35 @@ class CartCard extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 20),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              cart.product.title,
-              style: const TextStyle(color: Colors.black, fontSize: 16),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 8),
-            Text.rich(
-              TextSpan(
-                text: "\$${cart.product.price}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.w600, color: kPrimaryColor),
-                children: [
-                  TextSpan(
-                      text: " x${cart.numOfItem}",
-                      style: Theme.of(context).textTheme.bodyLarge),
-                ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                cart.product.title,
+                style: const TextStyle(color: Colors.black, fontSize: 16),
+                maxLines: 2,
               ),
-            )
-          ],
-        )
+              const SizedBox(height: 8),
+              Text.rich(
+                TextSpan(
+                  text: "₹${cart.product.price}",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, color: kPrimaryColor),
+                  children: [
+                    TextSpan(
+                        text: " x${cart.numOfItem}",
+                        style: Theme.of(context).textTheme.bodyLarge),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.remove_circle_outline),
+          onPressed: onRemove,
+        ),
       ],
     );
   }

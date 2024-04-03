@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shop_app/models/Cart.dart';
 import 'package:shop_app/screens/cart/cart_screen.dart';
 
 import '../../models/Product.dart';
@@ -105,7 +106,23 @@ class DetailsScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, CartScreen.routeName);
+                // Check if the product already exists in the cart
+                bool productExistsInCart = demoCarts.any((cart) => cart.product == product);
+
+                if (!productExistsInCart) {
+                  // Add the product to the cart list
+                  demoCarts.add(Cart(product: product, numOfItem: 1));
+
+                  // Show a snackbar to indicate that the product was added to the cart
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Product added to cart')),
+                  );
+                } else {
+                  // Show a snackbar to indicate that the product is already in the cart
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Product is already in cart')),
+                  );
+                }
               },
               child: const Text("Add To Cart"),
             ),
