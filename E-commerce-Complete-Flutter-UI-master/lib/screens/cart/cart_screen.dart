@@ -55,12 +55,23 @@ class _CartScreenState extends State<CartScreen> {
               setState(() {
                 // Clear the demoCarts list to remove all items from the cart
                 demoCarts.clear();
+                calculateTotal();
               });
             },
           ),
         ],
       ),
-      body: Padding(
+      body: demoCarts.isEmpty
+          ? Center(
+        child: Text(
+          "No items in the cart",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      )
+          : Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: ListView.builder(
           itemCount: demoCarts.length,
@@ -73,6 +84,7 @@ class _CartScreenState extends State<CartScreen> {
                 onDismissed: (direction) {
                   setState(() {
                     demoCarts.removeAt(index);
+                    calculateTotal(); // Ensure you recalculate total when removing an item
                   });
                 },
                 background: Container(
@@ -91,10 +103,9 @@ class _CartScreenState extends State<CartScreen> {
                 child: CartCard(
                   cart: demoCarts[index],
                   onRemove: () {
-                    // Define the action to remove item from cart here
                     setState(() {
                       demoCarts.removeAt(index);
-                      calculateTotal();
+                      calculateTotal(); // Recalculate total after removing an item
                     });
                   },
                 ),

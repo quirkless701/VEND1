@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../constants.dart';
 import '../models/Product.dart';
@@ -29,20 +28,32 @@ class ProductCard extends StatelessWidget {
             color: Colors.grey[200], // Light grey background color
             borderRadius: BorderRadius.circular(12.0), // Rounded corners
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.title,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  maxLines: 2,
+          child: Row(
+            children: [
+              // Image
+              Container(
+                width: 100, // Adjust width as needed
+                height: 100, // Adjust height as needed
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                  image: DecorationImage(
+                    image: AssetImage(product.images[0]), // Assuming image path is provided in product data
+                    fit: BoxFit.fitWidth, // Adjust zoom level here
+                  ),
                 ),
-                SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              SizedBox(width: 16), // Adjust spacing between image and text
+              // Product Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      product.title,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      maxLines: 2,
+                    ),
+                    SizedBox(height: 8),
                     Text(
                       "₹${product.price}",
                       style: const TextStyle(
@@ -51,34 +62,10 @@ class ProductCard extends StatelessWidget {
                         color: kPrimaryColor,
                       ),
                     ),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(50),
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        height: 24,
-                        width: 24,
-                        decoration: BoxDecoration(
-                          color: product.isFavourite
-                              ? kPrimaryColor.withOpacity(0.15)
-                              : kSecondaryColor.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: SvgPicture.asset(
-                          "assets/icons/Heart Icon_2.svg",
-                          colorFilter: ColorFilter.mode(
-                            product.isFavourite
-                                ? const Color(0xFFFF4848)
-                                : const Color(0xFFDBDEE4),
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
