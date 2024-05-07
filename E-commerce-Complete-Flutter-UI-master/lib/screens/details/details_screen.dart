@@ -7,10 +7,17 @@ import 'components/product_description.dart';
 import 'components/product_images.dart';
 import 'components/top_rounded_container.dart';
 
-class DetailsScreen extends StatelessWidget {
+class DetailsScreen extends StatefulWidget {
   static String routeName = "/details";
 
   const DetailsScreen({Key? key}) : super(key: key);
+
+  @override
+  _DetailsScreenState createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  int selectedQuantity = 1; // Default quantity selected
 
   @override
   Widget build(BuildContext context) {
@@ -65,34 +72,76 @@ class DetailsScreen extends StatelessWidget {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: ElevatedButton(
-              onPressed: () {
-                // Check if the product already exists in the cart
-                bool productExistsInCart =
-                demoCarts.any((cart) => cart.product == product);
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildQuantityDropdown(),
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () {
+                    // Check if the product already exists in the cart
+                    bool productExistsInCart = demoCarts.any((cart) => cart.product == product);
 
-                if (!productExistsInCart) {
-                  // Add the product to the cart list
-                  demoCarts.add(Cart(product: product, numOfItem: 1));
+                    if (!productExistsInCart) {
+                      // Add the product to the cart list with selected quantity
+                      demoCarts.add(Cart(product: product, numOfItem: selectedQuantity));
 
-                  // Show a snackbar to indicate that the product was added to the cart
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Product added to cart')),
-                  );
-                } else {
-                  // Show a snackbar to indicate that the product is already in the cart
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Product is already in cart')),
-                  );
-                }
-              },
-              child: const Text("Add To Cart"),
+                      // Show a snackbar to indicate that the product was added to the cart
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Product added to cart')),
+                      );
+                    } else {
+                      // Show a snackbar to indicate that the product is already in the cart
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Product is already in cart')),
+                      );
+                    }
+                  },
+                  child: const Text("Add To Cart"),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildQuantityDropdown() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Quantity',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(width: 8),
+        DropdownButton<int>(
+          value: selectedQuantity,
+          onChanged: (value) {
+            setState(() {
+              selectedQuantity = value!;
+            });
+          },
+          items: List.generate(
+            5, // Change this value as needed to set the maximum quantity
+                (index) => DropdownMenuItem<int>(
+              value: index + 1,
+              child: Text('${index + 1}'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+
 }
 
 class ProductDetailsArguments {

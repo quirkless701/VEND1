@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shop_app/models/Cart.dart';
 
 import '../../../constants.dart';
+import '../../qr_screen/qr_screen.dart'; // Import the PaymentScreen
 
 class CheckoutCard extends StatelessWidget {
   const CheckoutCard({
@@ -42,7 +43,12 @@ class CheckoutCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: total == 0 ? null : () {},
+              onPressed: total == 0
+                  ? null
+                  : () {
+                // Navigate to PaymentScreen
+                Navigator.pushNamed(context, PaymentScreen.routeName);
+              },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 minimumSize: Size(double.infinity, 50),
