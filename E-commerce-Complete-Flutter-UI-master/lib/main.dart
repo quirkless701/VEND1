@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:shop_app/screens/splash/splash_screen.dart';
+import 'package:shop_app/screens/init_screen.dart';
 
 import 'routes.dart';
 import 'theme.dart';
@@ -22,9 +22,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'The Flutter Way - Template',
+      title: 'VEND',
       theme: AppTheme.lightTheme(context),
-      initialRoute: SplashScreen.routeName,
+      initialRoute: InitScreen.routeName,
       routes: routes,
     );
   }
