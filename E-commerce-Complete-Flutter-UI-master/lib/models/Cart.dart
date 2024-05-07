@@ -2,12 +2,11 @@ import 'Product.dart';
 
 class Cart {
   final Product product;
-  final int numOfItem;
+  int numOfItem; // Remove 'final' keyword to make it mutable
 
   Cart({required this.product, required this.numOfItem});
 }
 
 // Demo data for our cart
 
-List<Cart> demoCarts = [
-];
+List<Cart> demoCarts = [];

@@ -32,6 +32,23 @@ class _CartScreenState extends State<CartScreen> {
       totalAmount = total;
     });
   }
+
+  void incrementQuantity(Cart cart) {
+    setState(() {
+      cart.numOfItem++;
+      calculateTotal();
+    });
+  }
+
+  void decrementQuantity(Cart cart) {
+    setState(() {
+      if (cart.numOfItem > 1) {
+        cart.numOfItem--;
+        calculateTotal();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +61,7 @@ class _CartScreenState extends State<CartScreen> {
             ),
             Text(
               "${demoCarts.length} items",
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodyText2,
             ),
           ],
         ),
@@ -53,7 +70,6 @@ class _CartScreenState extends State<CartScreen> {
             icon: Icon(Icons.delete),
             onPressed: () {
               setState(() {
-                // Clear the demoCarts list to remove all items from the cart
                 demoCarts.clear();
                 calculateTotal();
               });
@@ -84,7 +100,7 @@ class _CartScreenState extends State<CartScreen> {
                 onDismissed: (direction) {
                   setState(() {
                     demoCarts.removeAt(index);
-                    calculateTotal(); // Ensure you recalculate total when removing an item
+                    calculateTotal();
                   });
                 },
                 background: Container(
@@ -105,8 +121,14 @@ class _CartScreenState extends State<CartScreen> {
                   onRemove: () {
                     setState(() {
                       demoCarts.removeAt(index);
-                      calculateTotal(); // Recalculate total after removing an item
+                      calculateTotal();
                     });
+                  },
+                  onIncrement: () {
+                    incrementQuantity(demoCarts[index]);
+                  },
+                  onDecrement: () {
+                    decrementQuantity(demoCarts[index]);
                   },
                 ),
               ),
@@ -114,7 +136,7 @@ class _CartScreenState extends State<CartScreen> {
           },
         ),
       ),
-      bottomNavigationBar: CheckoutCard(total: totalAmount,),
+      bottomNavigationBar: CheckoutCard(total: totalAmount),
     );
   }
 }
