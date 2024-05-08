@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
-
+import '../../models/Cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
@@ -17,12 +17,14 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   late Uint8List _svgBytes = Uint8List(0); // Initialize _svgBytes
   late Timer _timer;
-  int _secondsRemaining = 60;
+  int _secondsRemaining = 360;
+  double totalAmount = 0.0; // Total amount variable
 
   @override
   void initState() {
     super.initState();
-    fetchQRImage();
+    calculateTotal(); // Call calculateTotal function
+    fetchQRImage(totalAmount); // Pass the amount
     startTimer();
   }
 
@@ -32,8 +34,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
     super.dispose();
   }
 
-  void fetchQRImage() async {
-    final response = await http.get(Uri.parse('https://upiqr.in/api/qr?name=Jaitra&vpa=jaitrav@okicici&amount=20.50'));
+  void fetchQRImage(double amount) async {
+    final url = Uri.parse('https://upiqr.in/api/qr');
+    final response = await http.get(
+      url.replace(queryParameters: {
+        'name': 'Jaitra',
+        'vpa': 'jaitrav@okicici',
+        'amount': amount.toStringAsFixed(2), // Ensure the amount is formatted properly
+      }),
+    );
+
     if (response.statusCode == 200) {
       setState(() {
         _svgBytes = response.bodyBytes;
@@ -51,16 +61,55 @@ class _PaymentScreenState extends State<PaymentScreen> {
           _secondsRemaining--;
         } else {
           _timer.cancel();
-          // Here you can cancel the payment or take any action
+          _cancelPayment(); // Cancel payment when timer runs out
         }
       });
     });
   }
 
+  void _cancelPayment() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop(); // Close the dialog when tapping outside
+          },
+          child: AlertDialog(
+            title: Text("Payment Cancelled"),
+            content: Text("Your payment was cancelled."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the alert dialog
+                  Navigator.of(context).pop(); // Go back to the previous screen
+                },
+                child: Text("OK"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+
   String formatTimer(int seconds) {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  // Function to calculate the total amount
+  void calculateTotal() {
+    double total = 0.0;
+    for (var cartItem in demoCarts) {
+      total += cartItem.product.price * cartItem.numOfItem;
+    }
+    setState(() {
+      totalAmount = total;
+    });
   }
 
   @override
@@ -102,7 +151,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  // Handle button press
+                  _cancelPayment(); // Cancel payment when cancel button is pressed
                 },
                 child: Text("Cancel Payment"),
               ),
@@ -113,4 +162,3 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 }
-

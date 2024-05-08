@@ -31,5 +31,5 @@ final Map<String, WidgetBuilder> routes = {
   DetailsScreen.routeName: (context) => const DetailsScreen(),
   CartScreen.routeName: (context) => const CartScreen(),
   ProfileScreen.routeName: (context) => const ProfileScreen(),
-  PaymentScreen.routeName :(context) => const PaymentScreen(),
+  PaymentScreen.routeName: (context) => const PaymentScreen(),
 };
