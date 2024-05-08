@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sms_receiver/sms_receiver.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   void initState() {
     super.initState();
+    requestPermissions(); // Request permissions on init
     calculateTotal(); // Call calculateTotal function
     fetchQRImage(totalAmount); // Pass the amount
     startTimer();
@@ -37,6 +39,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
     _timer.cancel();
     _smsReceiver?.stopListening();
     super.dispose();
+  }
+
+  Future<void> requestPermissions() async {
+    final status = await Permission.sms.request();
+    if (!status.isGranted) {
+      // Handle denied permission
+      // For example, show a dialog explaining why SMS permission is needed
+    }
   }
 
   void fetchQRImage(double amount) async {
@@ -127,7 +137,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     // This could be done using HTTP requests or other communication methods
 
     // Example of sending an HTTP request to the ESP32
-    String esp32Url = 'http://REPLACE THIS/turn_servo'; // Replace with your ESP32 IP address and endpoint
+    String esp32Url = 'http://192.168.137.190/turn_servo'; // Replace with your ESP32 IP address and endpoint
     http.post(Uri.parse(esp32Url)).then((response) {
       if (response.statusCode == 200) {
         // Successful response from ESP32
