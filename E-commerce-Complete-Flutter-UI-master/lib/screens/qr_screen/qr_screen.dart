@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:typed_data';
-import '../../models/Cart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sms_receiver/sms_receiver.dart';
 
 class PaymentScreen extends StatefulWidget {
   static const String routeName = "/payment";
@@ -19,6 +19,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   late Timer _timer;
   int _secondsRemaining = 360;
   double totalAmount = 0.0; // Total amount variable
+  String? _smsContent = 'Waiting for SMS...'; // SMS content variable
+  SmsReceiver? _smsReceiver;
 
   @override
   void initState() {
@@ -26,11 +28,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
     calculateTotal(); // Call calculateTotal function
     fetchQRImage(totalAmount); // Pass the amount
     startTimer();
+    _smsReceiver = SmsReceiver(onSmsReceived);
+    _startListeningForSMS();
   }
 
   @override
   void dispose() {
     _timer.cancel();
+    _smsReceiver?.stopListening();
     super.dispose();
   }
 
@@ -93,23 +98,59 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
+  void _startListeningForSMS() async {
+    if (_smsReceiver == null) return;
+    await _smsReceiver?.startListening();
+    setState(() {
+      _smsContent = 'Waiting for SMS...';
+    });
+  }
 
+  void onSmsReceived(String? message) {
+    if (message != null) {
+      setState(() {
+        _smsContent = message;
+        if (_smsContent!.contains('Rs.') &&
+            _smsContent!.contains('credited') &&
+            _smsContent!.contains('linked to VPA')) {
+          // Extract amount from the SMS and compare with totalAmount
+          // If amount matches, process the payment
+          _processPayment();
+        }
+      });
+    }
+  }
+
+  void _processPayment() {
+    // Your code to process the payment after reading the SMS
+    // For example, send a signal to the ESP32 to turn the servo
+    // This could be done using HTTP requests or other communication methods
+
+    // Example of sending an HTTP request to the ESP32
+    String esp32Url = 'http://REPLACE THIS/turn_servo'; // Replace with your ESP32 IP address and endpoint
+    http.post(Uri.parse(esp32Url)).then((response) {
+      if (response.statusCode == 200) {
+        // Successful response from ESP32
+        print('Signal sent to ESP32 to turn servo');
+      } else {
+        // Handle error response from ESP32
+        print('Error sending signal to ESP32');
+      }
+    }).catchError((error) {
+      // Handle network error
+      print('Network error: $error');
+    });
+  }
+
+  void calculateTotal() {
+    // Your code to calculate the total amount
+    // Assume the total amount calculation is already implemented
+  }
 
   String formatTimer(int seconds) {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
-  }
-
-  // Function to calculate the total amount
-  void calculateTotal() {
-    double total = 0.0;
-    for (var cartItem in demoCarts) {
-      total += cartItem.product.price * cartItem.numOfItem;
-    }
-    setState(() {
-      totalAmount = total;
-    });
   }
 
   @override
@@ -147,6 +188,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
               Text(
                 'Time remaining: ${formatTimer(_secondsRemaining)}',
                 style: TextStyle(fontSize: 20),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'SMS Content: $_smsContent',
+                style: TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 16),
               ElevatedButton(

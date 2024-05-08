@@ -39,7 +39,9 @@ dependencies:
   flutter_svg: ^2.0.10+1 # help us to use SVG in our app
   provider: ^6.1.1 # for State management
   http: ^1.2.1
-
+  readsms: ^0.1.0+3
+  sms_receiver: ^0.4.2
+  permission_handler: ^11.3.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
