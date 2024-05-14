@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:shop_app/screens/Dispense/dispense_screen.dart';
 import '../../models/Cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:readsms/readsms.dart';
+import 'package:lottie/lottie.dart';
 
 class PaymentScreen extends StatefulWidget {
   static const String routeName = "/payment";
@@ -25,6 +27,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String sms = 'no sms received';
   String sender = 'no sms received';
   String time = 'no sms received';
+  bool isSmsValid = false; // Flag to track whether SMS is valid
+  bool _isButtonsVisible = true;
 
   @override
   void initState() {
@@ -52,7 +56,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
             if (isCredited && hasExactOrderTotal) {
               print('SMS is valid');
-              // Now you can proceed with further actions
+              isSmsValid = true; // Set SMS valid flag to true
+              fetchNewSvg(); // Fetch the new SVG
+              _isButtonsVisible = false;
+              _timer.cancel();
+              _plugin.dispose();
+
+              Future.delayed(const Duration(milliseconds: 2500), () {
+                Navigator.pushNamed(context, DispensingMedicineScreen.routeName);
+              });
             }
           });
         });
@@ -85,7 +97,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       url.replace(queryParameters: {
         'name': 'Jaitra',
         'vpa': 'jaitrav@okicici',
-        'amount': amount.toStringAsFixed(2), // Ensure the amount is formatted properly
+        'amount': amount.toStringAsFixed(2),
+        // Ensure the amount is formatted properly
       }),
     );
 
@@ -119,34 +132,29 @@ class _PaymentScreenState extends State<PaymentScreen> {
       context: context,
       barrierDismissible: true, // Allow tapping outside to dismiss
       builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async {
-            _timer.cancel(); // Cancel the timer
-            Navigator.of(context).pop();
-            Navigator.of(context).pop(); // Go back to the cart screen
-            return false; // Prevents default back navigation
-          },
-          child: AlertDialog(
-            title: const Text("Payment Cancelled"),
-            content: const Text("Your payment was cancelled."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  _timer.cancel(); // Cancel the timer
-                  Navigator.of(context).pop(); // Close the alert dialog
-                  Navigator.of(context).pop(); // Go back to the cart screen
-                },
-                child: const Text("OK"),
-              ),
-            ],
-          ),
+        return AlertDialog(
+          title: const Text("Payment Cancelled"),
+          content: const Text("Your payment was cancelled."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _timer.cancel(); // Cancel the timer
+                Navigator.of(context).popUntil(
+                    ModalRoute.withName('/')); // Go back to the home screen
+              },
+              child: const Text("OK"),
+            ),
+          ],
         );
       },
     );
   }
 
-
-
+  void fetchNewSvg() {
+    // Fetch new SVG here and update _svgBytes
+    // Replace the following line with the logic to fetch the new SVG
+    _svgBytes = Uint8List(0); // Set _svgBytes to empty
+  }
 
   String formatTimer(int seconds) {
     final minutes = seconds ~/ 60;
@@ -167,48 +175,67 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Payment"),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(
-                width: double.infinity,
-                child: Text(
-                  "Complete Your Payment",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
+    return WillPopScope(
+      onWillPop: () async {
+        // Prevent popping if SMS is valid
+        return !isSmsValid;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: isSmsValid ? null : const Text("cancel"),
+          automaticallyImplyLeading: isSmsValid ? false : true,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    isSmsValid ? "Payment Received" : "Complete Your Payment",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _svgBytes.isNotEmpty
-                  ? SizedBox(
-                width: 200,
-                height: 200,
-                child: SvgPicture.memory(
-                  _svgBytes,
-                  fit: BoxFit.contain,
+                const SizedBox(height: 16),
+                isSmsValid
+                    ? SizedBox(
+                      width: 200, // Adjust width according to your need
+                      height: 200, // Adjust height according to your need
+                      child: Lottie.asset(
+                        'assets/green_tick.json',
+                        fit: BoxFit.contain,
+                      ),
+                    )
+                    : _svgBytes.isNotEmpty
+                    ? SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: SvgPicture.memory(
+                        _svgBytes,
+                        fit: BoxFit.contain,
+                      ),
+                    )
+                    : const CircularProgressIndicator(),
+                // Loading indicator while waiting for response
+                const SizedBox(height: 16),
+                isSmsValid ? const SizedBox() : Text(
+                  'Time remaining: ${formatTimer(_secondsRemaining)}',
+                  style: const TextStyle(fontSize: 20),
                 ),
-              )
-                  : const CircularProgressIndicator(), // Loading indicator while waiting for response
-              const SizedBox(height: 16),
-              Text(
-                'Time remaining: ${formatTimer(_secondsRemaining)}',
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  _cancelPayment(); // Cancel payment when cancel button is pressed
-                },
-                child: const Text("Cancel Payment"),
-              ),
-            ],
+                const SizedBox(height: 16),
+                isSmsValid || !_isButtonsVisible
+                    ? const SizedBox()
+                    : ElevatedButton(
+                  onPressed: () {
+                    _cancelPayment(); // Cancel payment when cancel button is pressed
+                  },
+                  child: const Text("Cancel Payment"),
+                ),
+              ],
+            ),
           ),
         ),
       ),
